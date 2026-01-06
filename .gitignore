@@ -1,0 +1,72 @@
+####################
+# Python
+####################
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+####################
+# Virtual Environments
+####################
+.venv/
+venv/
+env/
+ENV/
+
+####################
+# Jupyter Notebook
+####################
+.ipynb_checkpoints/
+
+####################
+# Environment / Secrets
+####################
+.env
+.env.*
+*.env
+*.key
+*.pem
+*.crt
+*.pfx
+*.token
+*.secret
+
+####################
+# Logs / Temp
+####################
+*.log
+*.tmp
+*.bak
+*.swp
+*.cache
+
+####################
+# VS Code
+####################
+.vscode/
+!.vscode/extensions.json
+
+####################
+# OS / Editor junk
+####################
+.DS_Store
+Thumbs.db
+desktop.ini
+
+####################
+# PowerShell / Batch artifacts
+####################
+*.ps1xml
+*.clixml
+
+####################
+# Large outputs (customize if needed)
+####################
+output/
+outputs/
+data/
