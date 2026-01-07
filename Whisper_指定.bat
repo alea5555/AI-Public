@@ -2,7 +2,7 @@
 setlocal EnableExtensions EnableDelayedExpansion
 REM --- 設置編碼為 UTF-8 (Code Page 65001) ---
 chcp 65001 >nul
-rem 在DOS下執行(檔案存在不轉換) cmd /c "chcp 65001 >nul && call "f:\F\AI\public\Whisper語音辨識\Whisper_指定.bat""
+rem 在DOS下執行(檔案存在不轉換) cmd /c "chcp 65001 >nul && call "f:\F\AI\public\Whisper_指定.bat""
 REM ===================================================
 REM Whisper_指定.bat  (最終交付版)
 REM 功能：
@@ -18,9 +18,9 @@ REM ===================================================
 REM ===================================================
 REM 你原本的工具路徑（不動）
 REM ===================================================
-set "WHISPER=C:\_install\Whisper_F\main.exe"
-set "MODEL=C:\_install\Whisper_F\ggml-medium.bin"
-set "FFMPEG=C:\_install\Whisper_F\ffmpeg.exe"
+set "WHISPER=C:\_install\Whispertool\main.exe"
+set "MODEL=C:\_install\Whispertool\ggml-medium.bin"
+set "FFMPEG=C:\_install\Whispertool\ffmpeg.exe"
 
 REM ===================================================
 REM 讓你輸入要辨識的目錄（可拖曳資料夾進來）
