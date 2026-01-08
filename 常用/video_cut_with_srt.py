@@ -41,6 +41,29 @@ def shift_srt(input_srt, output_srt, shift_seconds):
     )
 
 # =========================
+# 時間字串解析（重點新增）
+# =========================
+def parse_time_input(text: str) -> float:
+    """
+    支援：
+    - mm:ss
+    - 秒數
+    - 空白（=0）
+    """
+    text = text.strip()
+    if not text:
+        return 0.0
+
+    if ":" in text:
+        parts = text.split(":")
+        if len(parts) != 2:
+            raise ValueError("時間格式錯誤，請用 mm:ss")
+        m, s = parts
+        return int(m) * 60 + float(s)
+    else:
+        return float(text)
+
+# =========================
 # 影片工具
 # =========================
 def get_duration(video):
@@ -58,7 +81,7 @@ def cut_video(input_video, output_video, cut_front, cut_back):
     keep_length = duration - cut_front - cut_back
 
     if keep_length <= 0:
-        raise ValueError("修剪後影片長度 <= 0，請檢查秒數")
+        raise ValueError("修剪後影片長度 <= 0，請檢查輸入時間")
 
     cmd = [
         "ffmpeg", "-y",
@@ -92,11 +115,15 @@ def main():
     else:
         print("📝 字幕：無（將略過字幕處理）")
 
-    front = input("請輸入【前面】要修剪的秒數（預設 0）：").strip()
-    back  = input("請輸入【後面】要修剪的秒數（預設 0）：").strip()
+    try:
+        front = input("請輸入【前面】要修剪的時間（mm:ss 或 秒，預設 0）：")
+        back  = input("請輸入【後面】要修剪的時間（mm:ss 或 秒，預設 0）：")
 
-    cut_front = float(front) if front else 0.0
-    cut_back  = float(back) if back else 0.0
+        cut_front = parse_time_input(front)
+        cut_back  = parse_time_input(back)
+    except Exception as e:
+        print("❌ 輸入錯誤：", e)
+        sys.exit(1)
 
     out_video = video.with_name(video.stem + "_cut.mp4")
 
