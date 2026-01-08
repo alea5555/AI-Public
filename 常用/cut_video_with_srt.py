@@ -52,31 +52,23 @@ def get_duration(video):
     ]
     return float(subprocess.check_output(cmd).decode().strip())
 
-def cut_video(input_video, output_video, cut_seconds, mode):
+def cut_video(input_video, output_video, cut_front, cut_back):
     duration = get_duration(input_video)
+    keep_start = cut_front
+    keep_length = duration - cut_front - cut_back
 
-    if cut_seconds <= 0 or cut_seconds >= duration:
-        raise ValueError("修剪秒數不合理")
+    if keep_length <= 0:
+        raise ValueError("修剪後影片長度 <= 0，請檢查秒數")
 
-    if mode == "front":
-        cmd = [
-            "ffmpeg", "-y",
-            "-ss", str(cut_seconds),
-            "-i", str(input_video),
-            "-c", "copy",
-            "-movflags", "+faststart",
-            str(output_video)
-        ]
-    else:  # back
-        keep = duration - cut_seconds
-        cmd = [
-            "ffmpeg", "-y",
-            "-i", str(input_video),
-            "-t", str(keep),
-            "-c", "copy",
-            "-movflags", "+faststart",
-            str(output_video)
-        ]
+    cmd = [
+        "ffmpeg", "-y",
+        "-ss", str(keep_start),
+        "-i", str(input_video),
+        "-t", str(keep_length),
+        "-c", "copy",
+        "-movflags", "+faststart",
+        str(output_video)
+    ]
 
     subprocess.run(cmd, check=True)
 
@@ -100,22 +92,21 @@ def main():
     print("🎬 影片：", video.name)
     print("📝 字幕：", srt.name)
 
-    mode = input("請輸入修剪方向（front / back）：").strip().lower()
-    if mode not in ("front", "back"):
-        print("❌ 只能輸入 front 或 back")
-        sys.exit(1)
+    front = input("請輸入【前面】要修剪的秒數（預設 0）：").strip()
+    back  = input("請輸入【後面】要修剪的秒數（預設 0）：").strip()
 
-    cut_seconds = float(input("請輸入修剪秒數（例如 125）："))
+    cut_front = float(front) if front else 0.0
+    cut_back  = float(back) if back else 0.0
 
     out_video = video.with_name(video.stem + "_cut.mp4")
     out_srt   = srt.with_name(srt.stem + "_cut.srt")
 
     # 1️⃣ 剪影片
-    cut_video(video, out_video, cut_seconds, mode)
+    cut_video(video, out_video, cut_front, cut_back)
 
-    # 2️⃣ 處理字幕
-    if mode == "front":
-        shift_srt(srt, out_srt, cut_seconds)
+    # 2️⃣ 字幕只需要處理「前面」
+    if cut_front > 0:
+        shift_srt(srt, out_srt, cut_front)
     else:
         out_srt.write_text(srt.read_text(encoding="utf-8-sig"), encoding="utf-8")
 
