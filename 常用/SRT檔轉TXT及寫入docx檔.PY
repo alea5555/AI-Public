@@ -5,6 +5,11 @@ from datetime import datetime
 
 from docx import Document
 
+# -------------------------
+# 預設目錄（未輸入路徑時使用）
+# -------------------------
+DEFAULT_DIR = r"f:\F\AI\downloads"
+
 
 # -------------------------
 # 自動嘗試編碼讀取
@@ -107,12 +112,22 @@ def append_to_docx_if_exists(srt_path: Path, lines: list[str]) -> tuple[str, str
 
 # -------------------------
 # 取得使用者輸入（支援參數 or 互動）
+# - 有參數：用參數
+# - 沒參數：直接 Enter → 使用 DEFAULT_DIR
 # -------------------------
 def get_input_path() -> str:
     if len(sys.argv) >= 2:
         return " ".join(sys.argv[1:]).strip()
-    print("請輸入 SRT 檔案或資料夾路徑（可直接拖曳進來）：")
-    return input(">> ").strip()
+
+    print("請輸入 SRT 檔案或資料夾路徑（可直接拖曳進來，直接 Enter = 使用預設目錄）：")
+    print("預設目錄：", DEFAULT_DIR)
+    s = input(">> ").strip()
+
+    if not s:
+        return DEFAULT_DIR
+
+    return s
+
 
 def clean_path(p: str) -> str:
     p = (p or "").strip()
