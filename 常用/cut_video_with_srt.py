@@ -84,13 +84,13 @@ def main():
     video = videos[0]
     srt = video.with_suffix(".srt")
 
-    if not srt.exists():
-        print("❌ 找不到對應 SRT：", srt.name)
-        sys.exit(1)
-
     print("📂 目錄：", BASE_DIR)
     print("🎬 影片：", video.name)
-    print("📝 字幕：", srt.name)
+
+    if srt.exists():
+        print("📝 字幕：", srt.name)
+    else:
+        print("📝 字幕：無（將略過字幕處理）")
 
     front = input("請輸入【前面】要修剪的秒數（預設 0）：").strip()
     back  = input("請輸入【後面】要修剪的秒數（預設 0）：").strip()
@@ -99,20 +99,24 @@ def main():
     cut_back  = float(back) if back else 0.0
 
     out_video = video.with_name(video.stem + "_cut.mp4")
-    out_srt   = srt.with_name(srt.stem + "_cut.srt")
 
     # 1️⃣ 剪影片
     cut_video(video, out_video, cut_front, cut_back)
 
-    # 2️⃣ 字幕只需要處理「前面」
-    if cut_front > 0:
-        shift_srt(srt, out_srt, cut_front)
-    else:
-        out_srt.write_text(srt.read_text(encoding="utf-8-sig"), encoding="utf-8")
+    # 2️⃣ 有 SRT 才處理字幕
+    if srt.exists():
+        out_srt = srt.with_name(srt.stem + "_cut.srt")
+        if cut_front > 0:
+            shift_srt(srt, out_srt, cut_front)
+        else:
+            out_srt.write_text(
+                srt.read_text(encoding="utf-8-sig"),
+                encoding="utf-8"
+            )
+        print("📝 輸出字幕：", out_srt.name)
 
     print("\n✅ 完成")
     print("🎬 輸出影片：", out_video.name)
-    print("📝 輸出字幕：", out_srt.name)
 
 if __name__ == "__main__":
     main()
