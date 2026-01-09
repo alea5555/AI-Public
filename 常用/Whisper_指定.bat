@@ -24,7 +24,7 @@ set "FFMPEG=C:\_install\Whispertool\ffmpeg.exe"
 
 REM ===================================================
 REM 讓你輸入要辨識的目錄（可拖曳資料夾進來）
-REM 預設：f:\F\作者
+REM 預設：f:\F\AI\downloads
 REM ===================================================
 set "DEFAULT_DIR=f:\F\AI\downloads"
 
