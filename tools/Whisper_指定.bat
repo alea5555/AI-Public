@@ -84,7 +84,7 @@ REM 掃描檔案（遞迴）
 REM ===================================================
 set /a COUNT=0
 
-for /r "%ROOT%" %%F in (*.mp4 *.mp3) do (
+for /r "%ROOT%" %%F in (*.mp4 *.mp3 *.m4a) do (
   set "SRT_TARGET=%%~dpnF.srt"
   if exist "!SRT_TARGET!" (
     echo [跳過] 已存在：!SRT_TARGET!
