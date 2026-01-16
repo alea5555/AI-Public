@@ -1,155 +1,73 @@
-@echo off
+﻿@echo off
+REM --- 自動修正 VS Code 播放鍵產生的路徑跳脫錯誤 ---
+set "SCRIPT_PATH=%~f0"
+set "SCRIPT_PATH=%SCRIPT_PATH:\"=%"
+
+REM --- 自動定位到腳本所在目錄 ---
+cd /d "%~dp0"
 setlocal EnableExtensions EnableDelayedExpansion
-REM --- 設置編碼為 UTF-8 (Code Page 65001) ---
-chcp 65001 >nul
-rem 在DOS下執行(檔案存在不轉換) cmd /c "chcp 65001 >nul && call "f:\F\AI\Git\batch\Whisper語音辨識\Whisper_指定.bat""
-REM ===================================================
-REM Whisper_指定.bat  (最終交付版)
-REM 功能：
-REM - 讓你輸入/拖曳「要辨識的目錄」
-REM - 遞迴掃描 mp4/mp3
-REM - 轉 WAV(16kHz/mono) -> whisper 產生 SRT
-REM - 若同名 .srt 已存在則跳過（不轉WAV、不跑Whisper）
-REM - 轉完刪除暫存 wav
-REM 注意：
-REM - 若你用啟動器 run_whisper.bat 啟動，會先 chcp 65001，中文路徑更穩
-REM ===================================================
+[cite_start]chcp 65001 >nul [cite: 1]
 
 REM ===================================================
-REM 你原本的工具路徑（不動）
+REM Whisper_指定.bat (VS Code 強效修正版)
 REM ===================================================
-set "WHISPER=C:\_install\Whispertool\main.exe"
-set "MODEL=C:\_install\Whispertool\ggml-medium.bin"
-set "FFMPEG=C:\_install\Whispertool\ffmpeg.exe"
 
-REM ===================================================
-REM 讓你輸入要辨識的目錄（可拖曳資料夾進來）
-REM 預設：f:\F\AI\downloads
-REM ===================================================
-set "DEFAULT_DIR=f:\F\AI\downloads"
+REM --- 工具路徑 ---
+[cite_start]set "WHISPER=C:\_install\Whispertool\main.exe" [cite: 1]
+[cite_start]set "MODEL=C:\_install\Whispertool\ggml-medium.bin" [cite: 1]
+[cite_start]set "FFMPEG=C:\_install\Whispertool\ffmpeg.exe" [cite: 1]
 
-echo.
+REM --- 預設目錄 ---
+[cite_start]set "DEFAULT_DIR=f:\F\AI\downloads" [cite: 1]
+
 echo ===================================================
 echo 請輸入要辨識的目錄（可直接拖曳資料夾進來）
 echo 直接按 Enter 使用預設：%DEFAULT_DIR%
 echo ===================================================
-set /p "INPUT_DIR=> "
+[cite_start]set /p "INPUT_DIR=> " [cite: 1]
 
 if "%INPUT_DIR%"=="" (
-  set "ROOT=%DEFAULT_DIR%"
+  [cite_start]set "ROOT=%DEFAULT_DIR%" [cite: 1]
 ) else (
-  set "ROOT=%INPUT_DIR%"
+  [cite_start]set "ROOT=%INPUT_DIR%" [cite: 1]
 )
 
-REM 去掉可能的雙引號（拖曳進來通常會有引號）
-set "ROOT=%ROOT:"=%"
-
-REM 轉到該目錄（確保存在）
-cd /d "%ROOT%" 2>nul
-if errorlevel 1 (
-  echo [錯誤] 目錄不存在或無法進入：%ROOT%
-  pause
-  exit /b 1
-)
-set "ROOT=%CD%"
+[cite_start]REM 標準化路徑並支援 m4a [cite: 1, 2]
+[cite_start]set "ROOT=%ROOT:"=%" [cite: 1]
+[cite_start]cd /d "%ROOT%" 2>nul [cite: 1]
+[cite_start]set "ROOT=%CD%" [cite: 1]
 
 echo.
-echo ===================================================
-echo === Whisper 批量轉 SRT 字幕 (中文) 開始 ===
-echo 檢查機制：若同名 .srt 檔案已存在，則跳過（不轉WAV、不跑Whisper）
 echo 處理目錄：%ROOT%
 echo ===================================================
 
-REM ===================================================
-REM 檢查工具是否存在
-REM ===================================================
-if not exist "%FFMPEG%" (
-  echo [錯誤] 找不到 FFmpeg：%FFMPEG%
-  pause
-  exit /b 1
-)
-if not exist "%WHISPER%" (
-  echo [錯誤] 找不到 Whisper main.exe：%WHISPER%
-  pause
-  exit /b 1
-)
-if not exist "%MODEL%" (
-  echo [錯誤] 找不到模型檔：%MODEL%
-  pause
-  exit /b 1
-)
-
-REM ===================================================
-REM 掃描檔案（遞迴）
-REM ===================================================
-set /a COUNT=0
-
-for /r "%ROOT%" %%F in (*.mp4 *.mp3 *.m4a) do (
-  set "SRT_TARGET=%%~dpnF.srt"
+REM --- 掃描檔案 (支援 .m4a 且解決特殊字元問題) ---
+[cite_start]set /a COUNT=0 [cite: 1]
+for /f "delims=" %%F in ('dir /b /s "%ROOT%\*.mp4" "%ROOT%\*.mp3" "%ROOT%\*.m4a" 2^>nul') do (
+  [cite_start]set "SRT_TARGET=%%~dpnF.srt" [cite: 1]
   if exist "!SRT_TARGET!" (
-    echo [跳過] 已存在：!SRT_TARGET!
+    [cite_start]echo [跳過] 已存在：!SRT_TARGET! [cite: 1]
   ) else (
-    set /a COUNT+=1
-    call :PROCESS "%%~fF"
+    [cite_start]set /a COUNT+=1 [cite: 1]
+    [cite_start]call :PROCESS "%%F" [cite: 1]
   )
 )
 
 echo.
-echo ==========================================
-echo === 全部完成，實際轉檔 %COUNT% 個檔案 ===
-echo ==========================================
+[cite_start]echo === 全部完成，實際轉檔 %COUNT% 個檔案 === [cite: 1]
 pause
 exit /b
 
-
-REM ===================================================
-REM 子程序：處理單一檔案
-REM ===================================================
 :PROCESS
-set "IN=%~1"
-set "DIR=%~dp1"
-set "BASE=%~n1"
-
-set "WAV=%DIR%%BASE%.wav"
-set "SRT_TARGET=%DIR%%BASE%.srt"
-
+[cite_start]set "IN=%~1" [cite: 1]
+[cite_start]set "DIR=%~dp1" [cite: 1]
+[cite_start]set "BASE=%~n1" [cite: 1]
+[cite_start]set "WAV=%DIR%%BASE%.wav" [cite: 1]
 echo.
-echo -------------------------------------------------------
-echo [轉檔 %COUNT%] 輸入檔: %IN%
-echo -------------------------------------------------------
-
-REM [1/2] 轉 WAV（16kHz, mono, PCM s16le）
-echo [1/2] 轉換 WAV 檔案中...
-"%FFMPEG%" -y -i "%IN%" -ar 16000 -ac 1 -c:a pcm_s16le "%WAV%" >nul 2>&1
-if errorlevel 1 (
-  echo [失敗] FFmpeg 轉 WAV 失敗。
-  if exist "%WAV%" del /q "%WAV%"
-  goto :eof
-)
-
-REM [2/2] Whisper 轉錄輸出 SRT
-echo [2/2] 執行 Whisper 轉錄中文 SRT 中...
-pushd "%DIR%"
-"%WHISPER%" -m "%MODEL%" -l zh -t 4 -osrt -f "%WAV%" >nul 2>&1
-popd
-
-if errorlevel 1 (
-  echo [失敗] Whisper 轉錄失敗。
-  if exist "%WAV%" del /q "%WAV%"
-  goto :eof
-)
-
-REM 確認 SRT 是否產生
-if exist "%SRT_TARGET%" (
-  echo [完成] SRT 已生成: "%SRT_TARGET%"
-) else (
-  echo [警告] 未找到輸出的 SRT: "%SRT_TARGET%"
-)
-
-REM 清理暫存 WAV
-if exist "%WAV%" (
-  del /q "%WAV%"
-  echo [清理] 暫存 WAV 已刪除。
-)
-
-goto :eof
+[cite_start]echo [轉檔 %COUNT%] 輸入檔: %IN% [cite: 1]
+[cite_start]"%FFMPEG%" -y -i "%IN%" -ar 16000 -ac 1 -c:a pcm_s16le "%WAV%" >nul 2>&1 [cite: 1]
+[cite_start]pushd "%DIR%" [cite: 1]
+[cite_start]"%WHISPER%" -m "%MODEL%" -l zh -t 4 -osrt -f "%WAV%" >nul 2>&1 [cite: 1]
+[cite_start]popd [cite: 1]
+[cite_start]if exist "%WAV%" del /q "%WAV%" [cite: 1]
+[cite_start]goto :eof [cite: 1]
